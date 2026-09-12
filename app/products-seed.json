@@ -1,0 +1,8 @@
+[
+  { "id": "1", "name": "Classic Denim Jacket", "price": 2499, "emoji": "🧥", "desc": "Timeless denim, tailored fit." },
+  { "id": "2", "name": "Canvas Tote Bag",      "price": 899,  "emoji": "👜", "desc": "Sturdy everyday carry." },
+  { "id": "3", "name": "Leather Sneakers",     "price": 3299, "emoji": "👟", "desc": "Minimalist comfort." },
+  { "id": "4", "name": "Wool Scarf",           "price": 799,  "emoji": "🧣", "desc": "Soft, warm, versatile." },
+  { "id": "5", "name": "Aviator Sunglasses",   "price": 1499, "emoji": "🕶️", "desc": "UV-protected classic." },
+  { "id": "6", "name": "Chrono Wristwatch",    "price": 4999, "emoji": "⌚", "desc": "Precision meets style." }
+]
