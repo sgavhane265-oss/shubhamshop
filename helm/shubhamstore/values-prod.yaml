@@ -1,0 +1,36 @@
+# values-prod.yaml
+# Production overrides for ShubhamStore
+
+replicaCount: 5
+
+image:
+  tag: "1.0.0-prod"
+  pullPolicy: Always
+
+service:
+  # In production, an Ingress would route here. 
+  # But if using cloud load balancers directly:
+  type: LoadBalancer
+
+resources:
+  requests:
+    cpu: 200m
+    memory: 256Mi
+  limits:
+    cpu: 1000m
+    memory: 512Mi
+
+autoscaling:
+  enabled: true
+  minReplicas: 5
+  maxReplicas: 20
+  targetCPUUtilizationPercentage: 60
+
+redis:
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi

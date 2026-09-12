@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ include "shubhamstore.fullname" . }}-secrets
+  labels:
+    {{- include "shubhamstore.labels" . | nindent 4 }}
+type: Opaque
+data:
+  # Base64 encode the password from values.yaml, or use a dummy empty value if not set.
+  # This ensures secrets are not hardcoded in git.
+  REDIS_PASSWORD: {{ default "" .Values.redis.password | b64enc | quote }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "shubhamstore.fullname" . }}-config
+  labels:
+    {{- include "shubhamstore.labels" . | nindent 4 }}
+data:
+  REDIS_HOST: {{ include "shubhamstore.fullname" . }}-redis
+  REDIS_PORT: "6379"

@@ -1,0 +1,27 @@
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: shubhamstore-app-hpa
+  namespace: shubhamstore
+  labels:
+    app.kubernetes.io/name: shubhamstore
+    app.kubernetes.io/component: frontend
+spec:
+  # 1. Target the ShubhamStore Application Deployment
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: shubhamstore-app
+    
+  # 2. Sensible minimum and maximum replicas for a local demonstration
+  minReplicas: 2
+  maxReplicas: 10
+  
+  # 1. Configure CPU-based autoscaling
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 50

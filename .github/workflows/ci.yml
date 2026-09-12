@@ -1,0 +1,95 @@
+name: ShubhamStore CI Pipeline
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  validate-and-build:
+    name: CI Pipeline
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Checkout Code
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # Setup PHP environment
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          tools: composer
+          coverage: none
+
+      # 2. Validate PHP Syntax
+      - name: Validate PHP Syntax
+        run: |
+          echo "Checking PHP syntax..."
+          find app/ -name "*.php" -print0 | xargs -0 -n1 php -l
+
+      # 3. Run Application Tests
+      - name: Run Application Tests
+        run: |
+          echo "Running application test suite..."
+          # Currently a placeholder. Once PHPUnit is configured via Composer,
+          # this step will automatically detect and run the tests.
+          if [ -f "phpunit.xml" ]; then
+            vendor/bin/phpunit
+          else
+            echo "No test suite (phpunit.xml) found yet. Passing successfully."
+          fi
+
+      # Configure Docker Buildx (Enables advanced layer caching)
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # 4. Build the Docker Image
+      - name: Build Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          load: true # Required to load the built image into the local Docker daemon for Trivy to scan it
+          tags: shubhamstore:test
+          # Use GitHub Actions cache backend to speed up subsequent builds
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # 5. Scan the Image with Trivy
+      - name: Run Trivy Vulnerability Scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'shubhamstore:test'
+          format: 'table'
+          exit-code: '1' # Fails the pipeline if High/Critical vulnerabilities are found
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
+
+      # 6. Validate Kubernetes Manifests
+      - name: Validate Kubernetes Manifests
+        uses: yannh/kubeconform-action@v2
+        with:
+          kubernetes-version: '1.28.0'
+          target: 'k8s/'
+          strict: true
+
+      # 7. Validate Helm Templates
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v3.14.0
+
+      - name: Validate Helm Templates
+        run: |
+          echo "Linting Helm charts..."
+          # Scans the helm directory. If a chart exists, it runs strict linting and rendering validation.
+          for dir in helm/*/; do
+            if [ -f "$dir/Chart.yaml" ]; then
+              echo "Linting chart in $dir..."
+              helm lint "$dir" --strict
+              helm template "$dir" > /dev/null
+            fi
+          done

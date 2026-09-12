@@ -1,0 +1,66 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: redis-network-policy
+  namespace: shubhamstore
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: shubhamstore
+      app.kubernetes.io/component: cache
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # 1. Redis should accept traffic ONLY from the ShubhamStore application
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/component: frontend
+      ports:
+        - protocol: TCP
+          port: 6379
+  egress:
+    # 4. Preserve DNS functionality
+    - ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: app-network-policy
+  namespace: shubhamstore
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: shubhamstore
+      app.kubernetes.io/component: frontend
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # 3. Application ingress should be allowed from the appropriate entry point
+    # Omitting the 'from' array acts as a wildcard, allowing traffic from 
+    # anywhere (like an Ingress Controller or Minikube tunnel) on port 80.
+    - ports:
+        - protocol: TCP
+          port: 80
+  egress:
+    # Allow the application to communicate with Redis
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/component: cache
+      ports:
+        - protocol: TCP
+          port: 6379
+    # 4. Preserve DNS functionality for the application
+    - ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
