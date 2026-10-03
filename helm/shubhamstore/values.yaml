@@ -1,4 +1,4 @@
-# Default values for shubhamstore.
+﻿# Default values for shubhamstore.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
@@ -40,3 +40,12 @@ redis:
       cpu: 200m
       memory: 128Mi
   password: "" # Set this in production or via --set
+
+monitoring:
+  enabled: true
+
+kube-prometheus-stack:
+  grafana:
+    adminPassword: "shubhamstore"
+    service:
+      type: ClusterIP

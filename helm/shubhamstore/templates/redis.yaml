@@ -23,14 +23,35 @@ spec:
         command: ["redis-server", "--appendonly", "yes"]
         ports:
         - containerPort: 6379
+        volumeMounts:
+        - name: redis-data
+          mountPath: /data
         resources:
           {{- toYaml .Values.redis.resources | nindent 10 }}
         securityContext:
           allowPrivilegeEscalation: false
-          dropCapabilities:
-            - ALL
+          capabilities:
+            drop:
+              - ALL
           runAsNonRoot: true
           runAsUser: 999
+      volumes:
+      - name: redis-data
+        persistentVolumeClaim:
+          claimName: {{ include "shubhamstore.fullname" . }}-redis-pvc
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "shubhamstore.fullname" . }}-redis-pvc
+  labels:
+    {{- include "shubhamstore.labels" . | nindent 4 }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
 ---
 apiVersion: v1
 kind: Service

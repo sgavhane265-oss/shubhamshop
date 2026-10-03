@@ -39,3 +39,8 @@ $RECYCLE.BIN/
 *.swo
 *~
 .DS_Store
+
+.terraform
+*.tfstate
+*.tfstate.*
+.terraform.lock.hcl
